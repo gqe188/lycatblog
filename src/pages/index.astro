@@ -1,0 +1,391 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import InteractiveTerminal from '../components/InteractiveTerminal';
+import {
+  getAboutData,
+  getAllGalleryPhotos,
+  getAllPosts,
+  formatDisplayDate,
+} from '../lib/content';
+
+const about = getAboutData();
+const posts = getAllPosts();
+const gallery = getAllGalleryPhotos();
+
+// Curate 6 signature frames for the home exhibition preview
+const featuredIds = ['p22', 'p02', 'p10', 'p05', 'p08', 'p14'];
+const featuredPhotos = featuredIds
+  .map((id) => gallery.find((p) => p.id === id))
+  .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
+const terminalPosts = posts.map((p) => ({
+  slug: p.slug,
+  title: p.title,
+  date: p.date,
+  category: p.category,
+}));
+
+const pillars = [
+  {
+    code: '01 / WEBSEC',
+    title: 'Web 安全与 CTF',
+    desc: '沉迷于从 Cookie、JWT 到协议与源码细节中寻找破绽，享受解题通关那一刻的纯粹成就感。',
+    accent: 'text-sky-600 dark:text-sky-400',
+    badge: 'bg-sky-500/10 border-sky-500/20',
+  },
+  {
+    code: '02 / CODE & AI',
+    title: '编程与人工智能',
+    desc: '热衷构建顺手的工具与自动化脚本，持续探索大模型、智能体与安全工程的交汇地带。',
+    accent: 'text-emerald-600 dark:text-emerald-400',
+    badge: 'bg-emerald-500/10 border-emerald-500/20',
+  },
+  {
+    code: '03 / ACG',
+    title: '二次元世界',
+    desc: '从逢魔时刻的天空电线杆到鲜活的角色与故事，二次元的浪漫底色始终陪伴着每一次创作。',
+    accent: 'text-rose-600 dark:text-rose-400',
+    badge: 'bg-rose-500/10 border-rose-500/20',
+  },
+  {
+    code: '04 / SHUTTER',
+    title: '摄影与光影',
+    desc: '举起镜头记录流云、镜湖、江港与街灯，把短暂即逝的自然光影定格在数字暗房里。',
+    accent: 'text-amber-600 dark:text-amber-400',
+    badge: 'bg-amber-500/10 border-amber-500/20',
+  },
+];
+---
+
+<BaseLayout title="lycat && 475 — Web 安全 · AI · 二次元 · 摄影">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-8 space-y-20">
+    <!-- Hero Editorial Split -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+      <!-- Left Editorial Copy -->
+      <div class="lg:col-span-6 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-500/25 bg-sky-500/10 text-sky-700 dark:text-sky-300 text-xs font-mono">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft"></span>
+          <span>NODE // {about.author} · {about.focus}</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.15] text-slate-900 dark:text-white">
+          在<span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-cyan-500 to-rose-500 dark:from-sky-400 dark:via-cyan-300 dark:to-rose-400">代码与光圈</span>之间，
+          <br />
+          记录技术与黄昏。
+        </h1>
+
+        <p class="text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-300 max-w-xl">
+          你好，这里是 <strong class="font-semibold text-slate-900 dark:text-white">{about.author}</strong> 的数字自留地。
+          主攻 <span class="font-mono text-sky-600 dark:text-sky-400">Web 安全 / CTF</span>，热爱编程与人工智能探索，
+          同时也是一位二次元同好与随走随拍的摄影爱好者。
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <a
+            href="/posts"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-sky-400 text-white dark:text-slate-950 font-medium text-sm shadow-sm hover:opacity-90 transition-all"
+          >
+            <span>浏览技术文章</span>
+            <span class="font-mono text-xs opacity-80">→</span>
+          </a>
+          <a
+            href="/gallery"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-300/80 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 text-slate-800 dark:text-slate-100 font-medium text-sm hover:border-sky-500/60 transition-all"
+          >
+            <span>进入光影画廊</span>
+            <span class="font-mono text-xs text-slate-400">{gallery.length}</span>
+          </a>
+          <a
+            href={about.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-mono text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+          >
+            GitHub ↗
+          </a>
+        </div>
+
+        <!-- Subtle Telemetry Strip -->
+        <div class="pt-4 border-t border-slate-200/70 dark:border-slate-800/80 grid grid-cols-3 gap-4 max-w-md">
+          <div>
+            <div class="font-mono text-xl font-bold text-slate-900 dark:text-white">
+              {String(posts.length).padStart(2, '0')}
+            </div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">收录文章 / WP</div>
+          </div>
+          <div>
+            <div class="font-mono text-xl font-bold text-slate-900 dark:text-white">
+              {String(gallery.length).padStart(2, '0')}
+            </div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">摄影画廊作品</div>
+          </div>
+          <div>
+            <div class="font-mono text-xl font-bold text-sky-600 dark:text-sky-400">
+              WEB
+            </div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">CTF 主攻方向</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Viewfinder Anime Studio Window -->
+      <div class="lg:col-span-6">
+        <div class="viewfinder-box group rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-700/70 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 bg-slate-950">
+          <!-- Viewfinder Brackets -->
+          <span class="viewfinder-corner viewfinder-tl"></span>
+          <span class="viewfinder-corner viewfinder-tr"></span>
+          <span class="viewfinder-corner viewfinder-bl"></span>
+          <span class="viewfinder-corner viewfinder-br"></span>
+
+          <div class="relative aspect-[16/10] overflow-hidden">
+            <img
+              src="/images/hero-scene.jpg"
+              alt="黄昏窗边与相机、笔记本和猫的二次元插画场景"
+              class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-slate-950/25"></div>
+
+            <!-- Top Camera HUD -->
+            <div class="absolute top-4 left-6 right-6 flex items-center justify-between text-[11px] font-mono text-white/90">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950/45 backdrop-blur-md border border-white/15">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+                REC · TWILIGHT STUDIO
+              </span>
+              <span class="px-2 py-0.5 rounded-md bg-slate-950/45 backdrop-blur-md border border-white/15">
+                35mm · f/1.8 · ISO 200
+              </span>
+            </div>
+
+            <!-- Bottom Caption Bar -->
+            <div class="absolute bottom-4 left-6 right-6 flex items-end justify-between gap-3 text-white">
+              <div>
+                <div class="font-mono text-[11px] tracking-wider text-sky-300/95">
+                  $ whoami → lycat475
+                </div>
+                <div class="text-sm sm:text-base font-medium text-white/95 mt-0.5">
+                  逢魔时刻的写代码桌角与快门声
+                </div>
+              </div>
+              <a
+                href="/about"
+                class="shrink-0 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 text-xs font-mono text-white transition-colors"
+              >
+                about.md →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Latest Articles Section -->
+    <section>
+      <div class="flex items-end justify-between gap-4 mb-7">
+        <div>
+          <div class="font-mono text-xs uppercase tracking-widest text-sky-600 dark:text-sky-400">
+            01 // LATEST DISPATCHES
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+            最新文章与 WriteUp
+          </h2>
+        </div>
+        <a
+          href="/posts"
+          class="text-xs sm:text-sm font-mono text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors shrink-0"
+        >
+          查看全部 ({posts.length}) →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {posts.map((post) => (
+          <a
+            href={`/posts/${post.slug}`}
+            class="group surface-card surface-card-hover rounded-2xl overflow-hidden flex flex-col justify-between"
+          >
+            <div>
+              {post.coverImage ? (
+                <div class="relative aspect-[16/9] overflow-hidden bg-[#0e1522] border-b border-slate-200/70 dark:border-slate-800 p-4 flex items-center justify-center">
+                  <img
+                    src={post.coverImage}
+                    alt={post.title}
+                    loading="lazy"
+                    class="max-w-full max-h-full object-contain rounded-lg shadow-md transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-lg bg-slate-950/75 backdrop-blur-md text-sky-300 font-mono text-[11px] border border-white/10">
+                    {post.category}
+                  </span>
+                </div>
+              ) : (
+                <div class="relative aspect-[16/9] bg-[#0d1321] border-b border-slate-800 p-6 flex flex-col justify-between font-mono">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-lg bg-sky-500/15 text-sky-300 text-[11px] border border-sky-400/25">
+                      {post.category}
+                    </span>
+                    <div class="flex gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-rose-400/80" />
+                      <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
+                    </div>
+                  </div>
+                  <div class="text-sm sm:text-base text-slate-200">
+                    <span class="text-slate-500">01 </span>
+                    <span class="text-sky-400">console</span>.log(
+                    <span class="text-rose-300">"Hello World"</span>)
+                  </div>
+                  <div class="text-[11px] text-slate-500">
+                    // {post.slug} · {formatDisplayDate(post.date)}
+                  </div>
+                </div>
+              )}
+
+              <div class="p-6">
+                <div class="flex items-center gap-3 text-xs font-mono text-slate-500 dark:text-slate-400 mb-2.5">
+                  <span>{formatDisplayDate(post.date)}</span>
+                  <span>·</span>
+                  <span>{post.readingMinutes} min read</span>
+                  <span>·</span>
+                  <span>{post.totalWords} 字</span>
+                </div>
+
+                <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                  {post.title}
+                </h3>
+
+                <p class="mt-2.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-3">
+                  {post.excerpt}
+                </p>
+              </div>
+            </div>
+
+            <div class="px-6 pb-5 pt-2 flex items-center justify-between gap-2">
+              <div class="flex flex-wrap gap-1.5">
+                {post.tags.map((tag) => (
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+              <span class="font-mono text-xs text-sky-600 dark:text-sky-400 shrink-0 group-hover:translate-x-0.5 transition-transform">
+                阅读 →
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- Selected Photography Frames Bento -->
+    <section>
+      <div class="flex items-end justify-between gap-4 mb-7">
+        <div>
+          <div class="font-mono text-xs uppercase tracking-widest text-rose-500 dark:text-rose-400">
+            02 // SELECTED FRAMES
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+            光影画廊精选
+          </h2>
+        </div>
+        <a
+          href="/gallery"
+          class="text-xs sm:text-sm font-mono text-slate-600 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors shrink-0"
+        >
+          进入完整画廊 ({gallery.length}) →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[170px] sm:auto-rows-[200px]">
+        {featuredPhotos.map((photo, idx) => {
+          // Bento span pattern for dramatic editorial rhythm
+          const spanClass =
+            idx === 0
+              ? 'col-span-2 row-span-2'
+              : idx === 1
+                ? 'col-span-2 row-span-1'
+                : 'col-span-1 row-span-1';
+          return (
+            <a
+              href={`/gallery#photo=${photo.id}`}
+              class={`group relative rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-slate-900 ${spanClass}`}
+            >
+              <img
+                src={photo.thumb}
+                alt={photo.title}
+                loading="lazy"
+                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/10 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+              <div class="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-slate-950/55 backdrop-blur-md text-[10px] font-mono text-white/90 border border-white/10">
+                {photo.frameCode}
+              </div>
+              <div class="absolute bottom-3 left-3 right-3 flex items-end justify-between text-white">
+                <div>
+                  <div class="text-sm font-semibold leading-tight">{photo.title}</div>
+                  <div class="text-[11px] text-slate-200/80 mt-0.5">{photo.seriesLabel} · {photo.mood}</div>
+                </div>
+                <span class="font-mono text-[11px] text-sky-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                  OPEN ↗
+                </span>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+
+    <!-- 4-Pillar Identity + Interactive WebSec Console -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div class="lg:col-span-7 space-y-5">
+        <div>
+          <div class="font-mono text-xs uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+            03 // INTERSECTIONS
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+            跨界坐标
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {pillars.map((item) => (
+            <div class="surface-card surface-card-hover rounded-2xl p-5">
+              <span class={`inline-block px-2 py-0.5 rounded-md border font-mono text-[11px] font-semibold ${item.badge} ${item.accent}`}>
+                {item.code}
+              </span>
+              <h3 class="mt-3 text-base font-bold text-slate-900 dark:text-white">
+                {item.title}
+              </h3>
+              <p class="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="font-mono text-xs uppercase tracking-widest text-sky-600 dark:text-sky-400">
+              04 // INTERACTIVE SHELL
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+              WebSec 交互终端
+            </h2>
+          </div>
+          <a href="/about" class="text-xs font-mono text-slate-500 hover:text-sky-500 transition-colors">
+            关于我 →
+          </a>
+        </div>
+
+        <InteractiveTerminal
+          client:visible
+          author={about.author}
+          focus={about.focus}
+          github={about.github}
+          posts={terminalPosts}
+          galleryCount={gallery.length}
+        />
+      </div>
+    </section>
+  </div>
+</BaseLayout>

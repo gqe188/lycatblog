@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 Not Found · lycat && 475">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 py-24 text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-rose-500/25 bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono text-xs mb-6">
+      HTTP/1.1 404 Not Found
+    </div>
+    <h1 class="text-5xl sm:text-6xl font-mono font-bold tracking-tight text-slate-900 dark:text-white">
+      404
+    </h1>
+    <p class="mt-4 text-base text-slate-600 dark:text-slate-400">
+      你访问的路径似乎在异世界迷路了，或者这里并没有藏着 flag。
+    </p>
+    <div class="mt-8 flex items-center justify-center gap-3">
+      <a
+        href="/"
+        class="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-sky-400 text-white dark:text-slate-950 text-sm font-medium hover:opacity-90 transition-opacity"
+      >
+        返回首页
+      </a>
+      <a
+        href="/gallery"
+        class="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-sky-500 transition-colors"
+      >
+        去画廊逛逛
+      </a>
+    </div>
+  </div>
+</BaseLayout>

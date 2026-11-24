@@ -1,0 +1,169 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import InteractiveTerminal from '../components/InteractiveTerminal';
+import { getAboutData, getAllGalleryPhotos, getAllPosts } from '../lib/content';
+import { renderMarkdown } from '../lib/markdown';
+
+const about = getAboutData();
+const posts = getAllPosts();
+const gallery = getAllGalleryPhotos();
+const { html: aboutHtml } = await renderMarkdown(about.raw);
+
+const terminalPosts = posts.map((p) => ({
+  slug: p.slug,
+  title: p.title,
+  date: p.date,
+  category: p.category,
+}));
+
+const interests = [
+  {
+    tag: 'Web Security & CTF',
+    title: 'Web 安全与攻防解题',
+    detail: '专注 Web 方向漏洞挖掘与 CTF 竞赛，从 JWT 伪造、接口审计到 MISC 图像/压缩包取证，记录每一次推理解谜过程。',
+  },
+  {
+    tag: 'Programming & AI',
+    title: '编程工程与人工智能',
+    detail: '喜欢用 Python / JS / TypeScript 写顺手工具与自动化脚本，持续关注大模型、智能体与安全分析的结合实践。',
+  },
+  {
+    tag: 'ACG Culture',
+    title: '二次元热爱',
+    detail: '偏爱极具空气感的光影美术、电线杆黄昏与温柔细腻的叙事，也让这份审美自然融入博客的视觉细节。',
+  },
+  {
+    tag: 'Photography',
+    title: '自然与城市摄影',
+    detail: '用镜头记录山水倒影、夏日光斑、江港逆光与夜色街灯，在画廊里按原画幅完整留存每一次按下快门的瞬间。',
+  },
+];
+---
+
+<BaseLayout
+  title="关于 · lycat && 475"
+  description="关于 lycat && 475：Web 安全方向 CTF 选手、编程与 AI 探索者、二次元与摄影爱好者。"
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-10 space-y-12">
+    <!-- Profile Hero Card -->
+    <section class="surface-card rounded-3xl overflow-hidden">
+      <div class="relative h-44 sm:h-56 overflow-hidden bg-slate-900">
+        <img
+          src="/images/hero-scene.jpg"
+          alt="lycat && 475 黄昏工作室插画"
+          class="w-full h-full object-cover object-center opacity-90"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+        <div class="absolute top-4 right-5 px-3 py-1 rounded-full bg-slate-950/55 backdrop-blur-md border border-white/15 font-mono text-[11px] text-sky-300">
+          HTTP/2 200 OK · about.md
+        </div>
+      </div>
+
+      <div class="px-6 sm:px-9 pb-8 -mt-12 relative z-10">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div class="flex items-end gap-4">
+            <div class="w-24 h-24 rounded-2xl border-4 border-[var(--bg-surface)] bg-slate-900 shadow-lg overflow-hidden shrink-0 flex items-center justify-center">
+              <img
+                src="/images/lycat-avatar.jpg"
+                alt="lycat 剪影头像"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="pb-1">
+              <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+                {about.author}
+              </h1>
+              <p class="font-mono text-xs sm:text-sm text-sky-600 dark:text-sky-400 mt-0.5">
+                方向：{about.focus} · AI · ACG · Photography
+              </p>
+            </div>
+          </div>
+
+          <a
+            href={about.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-900 dark:bg-sky-400 text-white dark:text-slate-950 font-mono text-xs font-semibold hover:opacity-90 transition-opacity shrink-0"
+          >
+            <span>github.com/lycat475</span>
+            <span>↗</span>
+          </a>
+        </div>
+
+        <!-- Rendered Authentic about.md Content -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div class="md:col-span-7 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50 p-5 sm:p-6">
+            <div class="font-mono text-[11px] uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+              <span>PROFILE // RENDERED FROM ABOUT.MD</span>
+              <span class="text-emerald-500">● VERIFIED</span>
+            </div>
+            <div class="editorial-prose prose-sm max-w-none" set:html={aboutHtml} />
+          </div>
+
+          <div class="md:col-span-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-[#0d1321] p-5 font-mono text-xs text-slate-300 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-slate-500 pb-3 mb-3 border-b border-slate-800">
+                <span>GET /about.md</span>
+                <span class="text-emerald-400">200 OK</span>
+              </div>
+              <pre class="whitespace-pre-wrap leading-relaxed text-sky-200/95">{about.raw}</pre>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-500">
+              X-Author: {about.author}
+              <br />
+              X-Focus: Web-Security / CTF
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interests & Domains -->
+    <section>
+      <div class="mb-6">
+        <div class="font-mono text-xs uppercase tracking-widest text-rose-500 dark:text-rose-400">
+          DOMAINS // INTEREST GRAPH
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+          热爱与探索方向
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {interests.map((item) => (
+          <div class="surface-card surface-card-hover rounded-2xl p-5">
+            <div class="font-mono text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">
+              {item.tag}
+            </div>
+            <h3 class="mt-2 text-base font-bold text-slate-900 dark:text-white">
+              {item.title}
+            </h3>
+            <p class="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              {item.detail}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Interactive Terminal Playground -->
+    <section>
+      <div class="mb-5">
+        <div class="font-mono text-xs uppercase tracking-widest text-sky-600 dark:text-sky-400">
+          PLAYGROUND // MINI CTF CONSOLE
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+          交互终端 &amp; JWT 快捷解码
+        </h2>
+      </div>
+      <InteractiveTerminal
+        client:visible
+        author={about.author}
+        focus={about.focus}
+        github={about.github}
+        posts={terminalPosts}
+        galleryCount={gallery.length}
+      />
+    </section>
+  </div>
+</BaseLayout>

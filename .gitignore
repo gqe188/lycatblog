@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.astro/
+
+# Worktrees & IDE
+.worktrees/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Generated media & synced build cache (regenerated from ../lycatblog-content)
+public/media/
+src/generated/

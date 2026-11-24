@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostsExplorer from '../../components/PostsExplorer';
+import { getAllPosts, getAllTags } from '../../lib/content';
+
+const posts = getAllPosts();
+const tags = getAllTags();
+---
+
+<BaseLayout
+  title="文章归档 · lycat && 475"
+  description="lycat && 475 的全部博客文章：CTF WriteUp、Web 安全笔记、编程与日常随笔。"
+>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-8">
+    <header class="mb-10">
+      <div class="font-mono text-xs uppercase tracking-widest text-sky-600 dark:text-sky-400">
+        ARCHIVE // DISPATCHES &amp; WRITEUPS
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mt-2">
+        文章与技术笔记
+      </h1>
+      <p class="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl">
+        收录 Web 安全解题复盘、MISC 逆向奇思、代码片段与生活随想。支持按标题关键词或标签实时检索。
+      </p>
+    </header>
+
+    <PostsExplorer client:load posts={posts} tags={tags} />
+  </div>
+</BaseLayout>

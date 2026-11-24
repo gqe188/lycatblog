@@ -1,0 +1,270 @@
+---
+import '@fontsource/plus-jakarta-sans/400.css';
+import '@fontsource/plus-jakarta-sans/500.css';
+import '@fontsource/plus-jakarta-sans/600.css';
+import '@fontsource/plus-jakarta-sans/700.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/jetbrains-mono/600.css';
+import '../styles/global.css';
+
+import CommandPalette from '../components/CommandPalette';
+import { getAboutData, getAllGalleryPhotos, getAllPosts } from '../lib/content';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'lycat && 475 — WebSec · AI · ACG · Photography',
+  description = 'lycat && 475 的个人博客：Web 安全与 CTF WriteUp、编程与人工智能探索、二次元热爱与光影摄影画廊。',
+} = Astro.props;
+
+const pathname = Astro.url.pathname;
+const about = getAboutData();
+const posts = getAllPosts();
+const gallery = getAllGalleryPhotos();
+
+const navItems = [
+  { href: '/', label: '首页', en: 'HOME' },
+  { href: '/posts', label: '文章', en: 'POSTS' },
+  { href: '/gallery', label: '画廊', en: 'GALLERY' },
+  { href: '/about', label: '关于', en: 'ABOUT' },
+];
+
+const isActive = (href: string) => {
+  if (href === '/') return pathname === '/' || pathname === '';
+  return pathname.startsWith(href);
+};
+
+const searchPosts = posts.map((p) => ({
+  slug: p.slug,
+  title: p.title,
+  date: p.date,
+  category: p.category,
+  tags: p.tags,
+  excerpt: p.excerpt,
+}));
+---
+
+<!doctype html>
+<html lang="zh-CN" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content="Astro · Gemini 4 Neon" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+
+    <!-- Zero-flash theme initialization -->
+    <script is:inline>
+      (function () {
+        try {
+          const saved = localStorage.getItem('lycat-theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (saved === 'dark' || (!saved && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch {}
+      })();
+    </script>
+  </head>
+
+  <body class="min-h-screen flex flex-col selection:bg-sky-500/20">
+    <!-- Top Sticky Glassmorphic Navbar -->
+    <header class="sticky top-0 z-40 border-b border-slate-200/70 dark:border-slate-800/80 bg-[var(--bg-glass)] backdrop-blur-md">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        <!-- Brand Monogram -->
+        <a href="/" class="group flex items-center gap-2.5 shrink-0">
+          <span class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-slate-900 dark:bg-slate-800 border border-slate-700/60 shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="w-6 h-6" fill="none">
+              <defs>
+                <linearGradient id="navBrandGrad" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#38bdf8" />
+                  <stop offset="100%" stop-color="#fb7185" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M15 26 L19 13 L29 20 L35 20 L45 13 L49 26 C51 30 51 36 49 42 C46 49 40 52 32 52 C24 52 18 49 15 42 C13 36 13 30 15 26 Z"
+                stroke="url(#navBrandGrad)"
+                stroke-width="3.4"
+                stroke-linejoin="round"
+              />
+              <circle cx="32" cy="36" r="7.5" stroke="#38bdf8" stroke-width="2.6" />
+              <circle cx="32" cy="36" r="2.8" fill="#fb7185" />
+            </svg>
+          </span>
+          <div class="leading-tight">
+            <div class="font-mono text-sm font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-1">
+              <span>lycat</span>
+              <span class="text-sky-600 dark:text-sky-400">&amp;&amp;</span>
+              <span>475</span>
+            </div>
+            <div class="text-[10px] font-mono tracking-widest uppercase text-slate-500 dark:text-slate-400">
+              WEBSEC · SHUTTER
+            </div>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav aria-label="主导航" class="hidden md:flex items-center gap-1 p-1 rounded-2xl bg-slate-100/80 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800/80">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <a
+                href={item.href}
+                class={`px-4 py-1.5 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  active
+                    ? 'bg-white dark:bg-slate-800 text-slate-950 dark:text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-100'
+                }`}
+              >
+                <span>{item.label}</span>
+                {active && <span class="w-1.5 h-1.5 rounded-full bg-sky-500" />}
+              </a>
+            );
+          })}
+        </nav>
+
+        <!-- Utility Actions -->
+        <div class="flex items-center gap-2">
+          <!-- Command Palette Trigger -->
+          <button
+            type="button"
+            id="cmd-trigger"
+            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/70 hover:border-sky-400/60 text-xs text-slate-500 dark:text-slate-400 transition-colors cursor-pointer"
+            aria-label="打开站内搜索"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="hidden sm:inline">搜索</span>
+            <kbd class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-[10px] text-slate-500 dark:text-slate-400">
+              ⌘K
+            </kbd>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button
+            type="button"
+            id="theme-toggle"
+            class="p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/70 hover:border-sky-400/60 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+            aria-label="切换明暗主题"
+            title="切换明暗主题"
+          >
+            <svg class="w-4 h-4 hidden dark:block text-amber-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <svg class="w-4 h-4 block dark:hidden text-slate-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </button>
+
+          <!-- Mobile Menu Button -->
+          <button
+            type="button"
+            id="mobile-menu-btn"
+            class="md:hidden p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 cursor-pointer"
+            aria-label="切换菜单"
+            aria-expanded="false"
+          >
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Nav Drawer -->
+      <div id="mobile-nav" class="hidden md:hidden border-t border-slate-200/70 dark:border-slate-800 bg-[var(--bg-surface)] px-4 py-3">
+        <div class="grid grid-cols-2 gap-2">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <a
+                href={item.href}
+                class={`px-3.5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-between ${
+                  active
+                    ? 'bg-sky-500/12 text-sky-700 dark:text-sky-300 border border-sky-500/25'
+                    : 'bg-slate-100/70 dark:bg-slate-900 text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                <span>{item.label}</span>
+                <span class="font-mono text-[10px] opacity-60">{item.en}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Page Slot -->
+    <main class="flex-1 w-full">
+      <slot />
+    </main>
+
+    <!-- Editorial Footer -->
+    <footer class="mt-20 border-t border-slate-200/70 dark:border-slate-800/80 bg-[var(--bg-surface)]/70">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div>
+          <div class="font-mono text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            <span>{about.author}</span>
+            <span class="text-slate-400 font-normal">·</span>
+            <span class="text-xs font-normal text-slate-500 dark:text-slate-400">{about.focus}</span>
+          </div>
+          <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+            在代码与漏洞边界探索逻辑，在二次元与取景框里收藏黄昏与晴空。
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-500 dark:text-slate-400">
+          <a href="/posts" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">文章 ({posts.length})</a>
+          <a href="/gallery" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">画廊 ({gallery.length})</a>
+          <a href="/about" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">关于</a>
+          <a
+            href={about.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+          >
+            GitHub ↗
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-slate-200/60 dark:border-slate-800/60">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-slate-400 dark:text-slate-500">
+          <span>© 2026 {about.author}. All rights reserved.</span>
+          <span>Astro 5 · React 19 · Tailwind CSS v4 · Crafted by Gemini 4 Neon</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Command Palette Island -->
+    <CommandPalette
+      client:idle
+      posts={searchPosts}
+      galleryCount={gallery.length}
+      githubUrl={about.github}
+    />
+
+    <!-- Global Navbar Interactions -->
+    <script is:inline>
+      (function () {
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn?.addEventListener('click', () => {
+          const isDark = document.documentElement.classList.toggle('dark');
+          localStorage.setItem('lycat-theme', isDark ? 'dark' : 'light');
+        });
+
+        const cmdBtn = document.getElementById('cmd-trigger');
+        cmdBtn?.addEventListener('click', () => {
+          window.dispatchEvent(new CustomEvent('open-command-palette'));
+        });
+
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileNav = document.getElementById('mobile-nav');
+        mobileBtn?.addEventListener('click', () => {
+          const isOpen = !mobileNav?.classList.toggle('hidden');
+          mobileBtn.setAttribute('aria-expanded', String(isOpen));
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GalleryExhibition from '../components/GalleryExhibition';
+import { getAllGalleryPhotos } from '../lib/content';
+
+const photos = getAllGalleryPhotos();
+const landscapeCount = photos.filter((p) => p.orientation === 'landscape').length;
+const portraitCount = photos.filter((p) => p.orientation === 'portrait').length;
+const squareCount = photos.filter((p) => p.orientation === 'square').length;
+---
+
+<BaseLayout
+  title="光影画廊 · lycat && 475"
+  description="lycat && 475 的个人摄影画廊：收录山水荷风、苍穹流云、生灵静物与城隅烟火 22 幅高清作品。"
+>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-8">
+    <header class="mb-9 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-widest text-rose-500 dark:text-rose-400">
+          EXHIBITION // PHOTOGRAPHY DARKROOM
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mt-2">
+          光影画廊
+        </h1>
+        <p class="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl">
+          保留每幅作品原始画幅比例无裁切呈现。点击任意画面进入暗房灯箱，支持键盘方向键切换、<kbd class="px-1.5 py-0.5 rounded bg-slate-200/80 dark:bg-slate-800 font-mono text-xs">Z</kbd> 键放大检视细节与底部胶片导览。
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0 font-mono text-xs">
+        <div class="surface-card rounded-xl px-3.5 py-2 text-center">
+          <div class="text-base font-bold text-slate-900 dark:text-white">{photos.length}</div>
+          <div class="text-[10px] text-slate-400">FRAMES</div>
+        </div>
+        <div class="surface-card rounded-xl px-3.5 py-2 text-center">
+          <div class="text-base font-bold text-sky-600 dark:text-sky-400">{landscapeCount}</div>
+          <div class="text-[10px] text-slate-400">横幅</div>
+        </div>
+        <div class="surface-card rounded-xl px-3.5 py-2 text-center">
+          <div class="text-base font-bold text-rose-500 dark:text-rose-400">{portraitCount}</div>
+          <div class="text-[10px] text-slate-400">竖幅</div>
+        </div>
+        <div class="surface-card rounded-xl px-3.5 py-2 text-center">
+          <div class="text-base font-bold text-emerald-600 dark:text-emerald-400">{squareCount}</div>
+          <div class="text-[10px] text-slate-400">方形</div>
+        </div>
+      </div>
+    </header>
+
+    <GalleryExhibition client:load photos={photos} />
+  </div>
+</BaseLayout>
