@@ -1,6 +1,7 @@
 ---
 /**
- * 小站看板娘「lycat」—— 原创矢量小猫。
+ * 小站看板猫「lycat」—— 原创简笔画小猫。
+ * 线条颜色跟随 currentColor（自动适配明暗主题），可用 --m-fill 给脸部填底色。
  * size: 像素大小；mood: 'normal' | 'wink'
  */
 interface Props {
@@ -9,7 +10,6 @@ interface Props {
   class?: string;
 }
 const { size = 120, mood = 'normal', class: cls = '' } = Astro.props;
-const uid = Math.random().toString(36).slice(2, 8);
 ---
 
 <svg
@@ -19,53 +19,31 @@ const uid = Math.random().toString(36).slice(2, 8);
   viewBox="0 0 120 120"
   role="img"
   aria-label="lycat 看板猫"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="4.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
 >
-  <defs>
-    <linearGradient id={`iris-${uid}`} x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#25304f"></stop>
-      <stop offset="0.55" stop-color="#2f6fd6"></stop>
-      <stop offset="1" stop-color="#6fe0ff"></stop>
-    </linearGradient>
-  </defs>
-  <!-- tail -->
-  <path class="tail" d="M92 104 C112 100 114 82 104 74" fill="none" stroke="var(--m-line,#2a2f45)" stroke-width="7" stroke-linecap="round"></path>
-  <path class="tail" d="M92 104 C112 100 114 82 104 74" fill="none" stroke="var(--m-fur,#fff8f1)" stroke-width="3.5" stroke-linecap="round"></path>
-  <!-- ears -->
-  <path d="M22 56 L26 14 L54 36 Z" fill="var(--m-fur,#fff8f1)" stroke="var(--m-line,#2a2f45)" stroke-width="3.2" stroke-linejoin="round"></path>
-  <path d="M98 56 L94 14 L66 36 Z" fill="var(--m-fur,#fff8f1)" stroke="var(--m-line,#2a2f45)" stroke-width="3.2" stroke-linejoin="round"></path>
-  <path d="M29 44 L31 24 L45 36 Z" fill="#ffb3d1"></path>
-  <path d="M91 44 L89 24 L75 36 Z" fill="#ffb3d1"></path>
-  <!-- head -->
-  <ellipse cx="60" cy="70" rx="45" ry="39" fill="var(--m-fur,#fff8f1)" stroke="var(--m-line,#2a2f45)" stroke-width="3.2"></ellipse>
-  <!-- tabby marks -->
-  <path d="M52 34 q2 6 0 11 M60 32 v12 M68 34 q-2 6 0 11" stroke="#f4a259" stroke-width="3" stroke-linecap="round" fill="none"></path>
-  <!-- eyes -->
-  <g class="eyes">
-    <g class="eye eye-l">
-      <ellipse cx="42" cy="70" rx="8.5" ry="11" fill={`url(#iris-${uid})`} stroke="var(--m-line,#2a2f45)" stroke-width="2"></ellipse>
-      <circle cx="39" cy="65" r="3.4" fill="#fff"></circle>
-      <circle cx="45" cy="76" r="1.6" fill="#fff" opacity=".85"></circle>
-    </g>
-    {
-      mood === 'wink' ? (
-        <path d="M70 71 q8 -7 16 0" stroke="var(--m-line,#2a2f45)" stroke-width="3.2" fill="none" stroke-linecap="round" />
-      ) : (
-        <g class="eye eye-r">
-          <ellipse cx="78" cy="70" rx="8.5" ry="11" fill={`url(#iris-${uid})`} stroke="var(--m-line,#2a2f45)" stroke-width="2" />
-          <circle cx="75" cy="65" r="3.4" fill="#fff" />
-          <circle cx="81" cy="76" r="1.6" fill="#fff" opacity=".85" />
-        </g>
-      )
-    }
+  <!-- 一笔画出的脑袋 + 耳朵 -->
+  <path
+    class="head"
+    d="M21 76 C19 58 23 45 31 36 L27 13 L50 28 C56 26.5 64 26.5 70 28 L93 13 L89 36 C97 45 101 58 99 76 C97 98 80 107 60 107 C40 107 23 98 21 76 Z"
+    fill="var(--m-fill, none)"></path>
+  <!-- 耳朵里的一道 -->
+  <path d="M33 22 L38 31 M87 22 L82 31" stroke-width="3" opacity=".55"></path>
+  <!-- 眼睛 -->
+  <g class="eyes" fill="currentColor" stroke="none">
+    <ellipse class="eye" cx="44" cy="64" rx="4" ry="5.5"></ellipse>
+    {mood === 'wink' ? <path d="M70 65 q6 -6.5 12 0" fill="none" stroke="currentColor" stroke-width="4" /> : <ellipse class="eye" cx="76" cy="64" rx="4" ry="5.5" />}
   </g>
-  <!-- blush -->
-  <ellipse cx="28" cy="84" rx="7" ry="4" fill="#ff8fbf" opacity=".45"></ellipse>
-  <ellipse cx="92" cy="84" rx="7" ry="4" fill="#ff8fbf" opacity=".45"></ellipse>
-  <!-- nose & mouth -->
-  <path d="M57.5 80 h5 l-2.5 3 z" fill="#ff7aa8"></path>
-  <path d="M53 85 q3.5 4 7 0 q3.5 4 7 0" stroke="var(--m-line,#2a2f45)" stroke-width="2.4" fill="none" stroke-linecap="round"></path>
-  <!-- whiskers -->
-  <path d="M10 74 l14 3 M10 84 l14 -1 M110 74 l-14 3 M110 84 l-14 -1" stroke="var(--m-line,#2a2f45)" stroke-width="2" stroke-linecap="round" opacity=".7"></path>
+  <!-- 腮红：三道小斜线 -->
+  <path class="blush" d="M29 80 l3.5 -5 M35 80 l3.5 -5 M41 80 l3.5 -5 M75.5 80 l3.5 -5 M81.5 80 l3.5 -5 M87.5 80 l3.5 -5" stroke-width="2.6"></path>
+  <!-- 鼻子 + ω 嘴 -->
+  <path d="M57 75 h6 l-3 3 z" stroke-width="2.6" fill="currentColor"></path>
+  <path d="M51 82 q4.5 5 9 0 q4.5 5 9 0" stroke-width="3.4"></path>
+  <!-- 胡须 -->
+  <path d="M5 68 L19 72 M5 80 L19 79 M115 68 L101 72 M115 80 L101 79" stroke-width="3"></path>
 </svg>
 
 <style>
@@ -73,14 +51,17 @@ const uid = Math.random().toString(36).slice(2, 8);
     display: block;
     overflow: visible;
   }
+  .mascot .blush {
+    stroke: var(--sakura, #ff6fae);
+  }
   .mascot .eye {
     transform-box: fill-box;
     transform-origin: center;
     animation: blink 5.5s infinite;
   }
-  .mascot .tail {
-    transform-origin: 92px 104px;
-    animation: wag 2.6s ease-in-out infinite;
+  .mascot .head {
+    transform-origin: 60px 107px;
+    animation: tilt 7s ease-in-out infinite;
   }
   @keyframes blink {
     0%,
@@ -89,16 +70,17 @@ const uid = Math.random().toString(36).slice(2, 8);
       transform: scaleY(1);
     }
     97% {
-      transform: scaleY(0.1);
+      transform: scaleY(0.12);
     }
   }
-  @keyframes wag {
+  @keyframes tilt {
     0%,
+    90%,
     100% {
       transform: rotate(0deg);
     }
-    50% {
-      transform: rotate(-12deg);
+    94% {
+      transform: rotate(-2.5deg);
     }
   }
 </style>
