@@ -14,6 +14,7 @@ Web 安全 / CTF / 逆向 / AI / 二次元 / 摄影。
 - **文章页**：目录与滚动高亮、阅读进度条、代码块窗口栏 + 一键复制、图片点击放大、上一篇 / 下一篇。
 - **画廊**：瀑布流 + 分类筛选 + PhotoSwipe 灯箱，构建时自动生成多尺寸 WebP。
 - **其它**：`Ctrl K` / `/` 站内搜索、标签页、RSS、sitemap、404 页面、控制台彩蛋（给 CTFer 的）。
+- **安全**：正文裸 HTML 按文本显示（XSS payload 不会执行）、Astro 内置 CSP，详见下方「安全说明」。
 
 ## 技术栈
 
@@ -53,6 +54,48 @@ lycatblog-content/
 - `src/data/posts-meta.json` —— 每篇文章的标签、简介、封面
 - `src/data/gallery-meta.json` —— 每张照片的分类和标题
 - `src/data/interests.ts` —— 首页 / 关于页的兴趣卡片文案
+
+## 安全说明（写 Web 安全 writeup 必读）
+
+**正文里的裸 HTML 一律按纯文本显示，不会执行。**
+Astro 默认的 Markdown 管线会把正文里的 HTML 原样渲染，也就是说 writeup 里随手写的
+`<script>alert(1)</script>`、`<img src=x onerror=...>` 会在自己博客上真的触发。
+本站加了 `src/lib/remark-html-as-text.mjs`，把代码块之外的 HTML 转成文本，payload 会原样显示在文章里。
+
+- 仍然生效的白名单：不带属性的 `<kbd> <br> <sup> <sub> <mark> <u> <s> <del> <ins> <small> <details> <summary>`，以及 HTML 注释。
+- 推荐写法：payload 放进 ` ``` ` 代码块或 `` `行内代码` ``，排版更清楚。
+- `npm run sync` 会对代码块外的裸 HTML 打印 `⚠` 提醒（只提醒，不阻止）。
+- 如果某篇文章确实需要嵌入真 HTML，改白名单正则即可，但请确认来源可信。
+
+**CSP**：`astro.config.mjs` 开启了 Astro 内置的 `security.csp`，每个页面都会带一个 CSP `<meta>`：
+
+- `script-src 'self'` + 构建期自动计算的内联脚本 hash —— 没有 `'unsafe-inline'`，注入的脚本跑不起来；
+- 防主题闪烁脚本放在 `public/theme-init.js`（同步加载），由 `'self'` 覆盖，不需要手动维护 hash；
+- `style-src` 放行了 `'unsafe-inline'`：Shiki 代码高亮依赖内联样式，这是 Astro CSP 的已知限制；
+- `font-src` 放行 `data:`：Vite 会把极小的字体分片内联成 data URI；
+- 其余：`default-src 'self'`、`object-src 'none'`、`base-uri 'self'`、`form-action 'self'`。
+
+`<meta>` 形式的 CSP 不支持 `frame-ancestors` 等指令。部署时如果能配置响应头，建议额外加上：
+
+```
+Content-Security-Policy: frame-ancestors 'none'
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+```
+
+（Cloudflare Pages / Netlify 可写在 `public/_headers`，Vercel 写在 `vercel.json`；GitHub Pages 不支持自定义响应头，只能依赖上面的 `<meta>` CSP。）
+
+**有意埋的彩蛋**（同行翻源码会看到，不想要可以删）：
+
+| 位置 | 内容 | 删除方式 |
+| --- | --- | --- |
+| 浏览器控制台 | ASCII 小猫 + base64 字符串 `flag{cur10us_c4t_f0und_th3_c0ns0l3}` | `src/layouts/BaseLayout.astro` 里 `console.log` 那段 |
+| 404 页面 | 伪造的 `X-Hint: flag{n0th1ng_h3r3_but_us_c4ts}` 响应 | `src/pages/404.astro` 的 `<pre class="term">` |
+| 首页看板猫 | 点击会说「flag 不在我身上！」「去控制台看看？」 | `src/pages/index.astro` 的 `lines` 数组 |
+
+这些都只是装饰性文本，不涉及任何真实凭据。站点是纯静态的，搜索框写入 `innerHTML` 前会做 HTML 转义。
 
 ## 命令
 

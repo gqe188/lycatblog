@@ -118,6 +118,31 @@ function excerpt(body, len = 90) {
   return text.length > len ? `${text.slice(0, len)}…` : text;
 }
 
+/**
+ * 找出代码块 / 行内代码之外的裸 HTML 标签。
+ * 构建时它们会被当成纯文本显示（见 src/lib/remark-html-as-text.mjs），
+ * 这里只是提醒：payload 最好放进 ``` 代码块或 `行内代码`，排版更清楚。
+ */
+const SAFE_TAG = /^<\/?(br|kbd|sup|sub|mark|u|s|del|ins|small|details|summary)\s*\/?>$/i;
+function findBareHtml(md) {
+  const hits = [];
+  let fence = null;
+  md.split('\n').forEach((line, i) => {
+    const f = line.match(/^\s*(`{3,}|~{3,})/);
+    if (f) {
+      if (!fence) fence = f[1];
+      else if (f[1][0] === fence[0] && f[1].length >= fence.length) fence = null;
+      return;
+    }
+    if (fence || /^( {4}|\t)/.test(line)) return;
+    const outside = line.replace(/(`+)[\s\S]*?\1/g, '');
+    for (const m of outside.matchAll(/<\/?[a-zA-Z][^>]*>/g)) {
+      if (!SAFE_TAG.test(m[0])) hits.push({ line: i + 1, tag: m[0].slice(0, 60) });
+    }
+  });
+  return hits;
+}
+
 // ---------- posts ----------
 resetDir(out.posts);
 const postsDir = path.join(src, 'posts');
@@ -130,7 +155,11 @@ for (const slug of fs.existsSync(postsDir) ? fs.readdirSync(postsDir) : []) {
     : fs.readdirSync(dir).find((f) => f.endsWith('.md'));
   if (!mdFile) continue;
 
-  const { title, date, subtitle, body } = parseHeader(fs.readFileSync(path.join(dir, mdFile), 'utf8'));
+  const raw = fs.readFileSync(path.join(dir, mdFile), 'utf8');
+  for (const h of findBareHtml(raw.replace(/\r\n/g, '\n'))) {
+    console.warn(`[sync] ⚠ posts/${slug}/${mdFile}:${h.line} 代码块外有裸 HTML ${h.tag} —— 会按纯文本显示，建议放进代码块`);
+  }
+  const { title, date, subtitle, body } = parseHeader(raw);
   const meta = postsMeta[slug] ?? {};
   const stat = fs.statSync(path.join(dir, mdFile));
 

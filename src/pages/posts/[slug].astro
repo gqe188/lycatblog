@@ -139,17 +139,30 @@ const og = cover ? (await getImage({ src: cover, width: 1200, format: 'jpg' })).
     h.append(a);
   });
 
-  // 代码复制
+  // 代码复制：优先 Clipboard API，不可用（非 HTTPS / 权限被拒）时退回 execCommand
+  const legacyCopy = (text: string) => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.append(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  };
   article.querySelectorAll<HTMLButtonElement>('.code-block .copy').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const code = btn.closest('.code-block')!.querySelector('pre')!.innerText;
+      let ok = false;
       try {
         await navigator.clipboard.writeText(code);
-        btn.textContent = 'copied ✓';
-        btn.classList.add('done');
+        ok = true;
       } catch {
-        btn.textContent = 'failed';
+        ok = legacyCopy(code);
       }
+      btn.textContent = ok ? 'copied ✓' : 'failed';
+      btn.classList.toggle('done', ok);
       setTimeout(() => {
         btn.textContent = 'copy';
         btn.classList.remove('done');

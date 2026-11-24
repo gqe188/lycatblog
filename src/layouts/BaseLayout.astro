@@ -42,16 +42,8 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     <meta property="og:site_name" content={SITE.name} />
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
-    <script is:inline>
-      (() => {
-        let t = null;
-        try {
-          t = localStorage.getItem('lycat-theme');
-        } catch {}
-        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.dataset.theme = t;
-      })();
-    </script>
+    <!-- 同步加载的外部脚本：避免主题闪烁，同时不需要为 CSP 维护内联 hash -->
+    <script is:inline src="/theme-init.js"></script>
   </head>
   <body>
     <a class="skip sr-only" href="#main">跳到正文</a>
