@@ -1,0 +1,558 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import Mascot from '../components/Mascot.astro';
+import Icon from '../components/Icon.astro';
+import { INTERESTS } from '../data/interests';
+import { getPosts, getPhotos, SITE } from '../lib/site';
+
+const posts = await getPosts();
+const photos = getPhotos();
+// 晴空主题用蓝天倒影，夜空主题用暮色山脊
+const heroDay = photos.find((p) => p.file.startsWith('p02')) ?? photos[0];
+const heroNight = photos.find((p) => p.file.startsWith('p01')) ?? heroDay;
+const hero = heroDay;
+const peek = [...photos].filter((p) => p !== heroDay && p !== heroNight).slice(0, 5);
+const about = await getEntry('pages', 'about');
+const field = (k: string) => about?.data.fields.find((f) => f.k === k)?.v;
+const ogImage = hero ? (await getImage({ src: hero.src, width: 1200, format: 'jpg' })).src : undefined;
+
+const termLines = [
+  { cmd: 'whoami', out: field('作者') ?? SITE.author },
+  { cmd: 'cat ./focus', out: field('方向') ?? 'Web 安全' },
+  { cmd: 'ls ./interests', out: '二次元  编程  AI  CTF  逆向  摄影' },
+  { cmd: `ls ./posts | wc -l`, out: String(posts.length) },
+];
+const escHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+const PS = '<span class="ps">lycat@475:~$</span> ';
+const termHtml =
+  termLines.map((l) => `${PS}${escHtml(l.cmd)}\n<span class="out">${escHtml(l.out)}</span>\n`).join('') +
+  `${PS}<span class="caret">▌</span>`;
+---
+
+<BaseLayout image={ogImage}>
+  <section class="container hero-wrap">
+    <div class="hero">
+      {heroDay && <Image class="hero-bg day" src={heroDay.src} alt="" widths={[800, 1400, 2000]} sizes="(max-width: 1120px) 100vw, 1120px" loading="lazy" />}
+      {heroNight && <Image class="hero-bg night" src={heroNight.src} alt="" widths={[800, 1400, 2000]} sizes="(max-width: 1120px) 100vw, 1120px" loading="lazy" />}
+      <div class="hero-shade"></div>
+      <svg class="hero-wires" viewBox="0 0 1200 640" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">
+        <g fill="currentColor">
+          <rect x="1012" y="40" width="13" height="620" rx="2"></rect>
+          <rect x="948" y="92" width="140" height="7" rx="2"></rect>
+          <rect x="962" y="146" width="112" height="6" rx="2"></rect>
+          <rect x="956" y="80" width="5" height="14" rx="1"></rect><rect x="992" y="80" width="5" height="14" rx="1"></rect><rect x="1040" y="80" width="5" height="14" rx="1"></rect><rect x="1076" y="80" width="5" height="14" rx="1"></rect>
+          <rect x="970" y="134" width="5" height="14" rx="1"></rect><rect x="1062" y="134" width="5" height="14" rx="1"></rect>
+          <rect x="1027" y="210" width="34" height="46" rx="4"></rect>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M958 82 Q 520 250 -40 168"></path>
+          <path d="M994 82 Q 560 290 -40 222"></path>
+          <path d="M1042 82 Q 1130 120 1260 100"></path>
+          <path d="M1078 82 Q 1160 130 1260 128"></path>
+          <path d="M972 136 Q 540 350 -40 300" stroke-width="1.6"></path>
+          <path d="M1064 136 Q 1150 175 1260 168" stroke-width="1.6"></path>
+        </g>
+        <g class="birds" fill="currentColor">
+          <ellipse cx="420" cy="199" rx="7" ry="5"></ellipse><circle cx="426" cy="193" r="3.4"></circle>
+          <ellipse cx="452" cy="203" rx="6.5" ry="5"></ellipse><circle cx="447" cy="197" r="3.2"></circle>
+        </g>
+      </svg>
+
+      <div class="hero-content">
+        <p class="kicker">// hello, world</p>
+        <h1><span class="nw">在代码与</span><span class="nw"><span class="grad">天空</span>之间</span></h1>
+        <p class="lead">
+          这里是 <b>lycat</b> 的晴空日志 —— 记录 Web 安全、CTF、逆向与 AI 的折腾，也收藏二次元和随手拍下的天空。
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="/posts/">读文章 <Icon name="arrow" size={16} /></a>
+          <a class="btn ghost" href="/gallery/"><Icon name="camera" size={16} /> 逛画廊</a>
+        </div>
+      </div>
+
+      <div class="term" aria-label="终端自我介绍">
+        <div class="term-bar">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="term-title">lycat@475: ~</span>
+        </div>
+        <pre class="term-body" data-lines={JSON.stringify(termLines)} set:html={termHtml} />
+        <div class="peek" title="喵？">
+          <Mascot size={84} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section">
+    <h2 class="section-title">兴趣领域 <span class="en">interests</span></h2>
+    <div class="interests">
+      {
+        INTERESTS.map((it, i) => (
+          <a class="interest card reveal" href={it.href} style={`--c:${it.color};animation-delay:${i * 80}ms`}>
+            <span class="ic">
+              <Icon name={it.icon} size={22} />
+            </span>
+            <span class="it-title">
+              {it.title}
+              <small>{it.en}</small>
+            </span>
+            <span class="it-text">{it.text}</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container section">
+    <div class="row-head">
+      <h2 class="section-title">最近文章 <span class="en">latest posts</span></h2>
+      <a class="more" href="/posts/">全部文章 <Icon name="arrow" size={14} /></a>
+    </div>
+    <div class="post-list">
+      {posts.slice(0, 5).map((post, i) => <PostCard post={post} index={i} />)}
+    </div>
+  </section>
+
+  <section class="container section">
+    <div class="row-head">
+      <h2 class="section-title">画廊 <span class="en">gallery</span></h2>
+      <a class="more" href="/gallery/">查看全部 {photos.length} 张 <Icon name="arrow" size={14} /></a>
+    </div>
+    <div class="peek-grid">
+      {
+        peek.map((p, i) => (
+          <a class="peek-item reveal" href={`/gallery/#photo-${p.index}`} style={`animation-delay:${i * 60}ms`}>
+            <Image src={p.src} alt={p.title || `照片 ${p.index}`} widths={[360, 640]} sizes="(max-width: 640px) 50vw, 360px" loading="lazy" />
+            {p.title && <span class="cap">{p.title}</span>}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // 终端打字机效果
+  const pre = document.querySelector<HTMLPreElement>('.term-body');
+  if (pre && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const lines = JSON.parse(pre.dataset.lines || '[]') as { cmd: string; out: string }[];
+    const ps = '<span class="ps">lycat@475:~$</span> ';
+    const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
+    let html = '';
+    pre.innerHTML = ps + '<span class="caret">▌</span>';
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    (async () => {
+      await sleep(500);
+      for (const l of lines) {
+        for (let i = 1; i <= l.cmd.length; i++) {
+          pre.innerHTML = html + ps + esc(l.cmd.slice(0, i)) + '<span class="caret">▌</span>';
+          await sleep(45 + Math.random() * 55);
+        }
+        await sleep(220);
+        html += ps + esc(l.cmd) + '\n<span class="out">' + esc(l.out) + '</span>\n';
+        pre.innerHTML = html + ps + '<span class="caret">▌</span>';
+        await sleep(380);
+      }
+    })();
+  }
+
+  // 戳一戳看板猫
+  const peek = document.querySelector<HTMLElement>('.peek');
+  const lines = ['喵？', '别戳啦 (>_<)', 'flag 不在我身上！', '去控制台看看？', '喵呜~'];
+  let n = 0;
+  peek?.addEventListener('click', () => {
+    peek.dataset.say = lines[n++ % lines.length];
+    peek.classList.remove('boing');
+    void peek.offsetWidth;
+    peek.classList.add('boing');
+  });
+</script>
+
+<style>
+  .hero-wrap {
+    padding-top: 12px;
+  }
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    align-items: end;
+    gap: 32px;
+    min-height: min(640px, 82vh);
+    padding: clamp(28px, 5vw, 56px);
+    border-radius: 28px;
+    overflow: hidden;
+    isolation: isolate;
+    color: #fff;
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(160deg, #7fb6f2, #f7b58f);
+  }
+  .hero :global(.hero-bg) {
+    position: absolute;
+    inset: 0;
+    z-index: -3;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    animation: drift 30s ease-in-out infinite alternate;
+  }
+  :global([data-theme='dark']) .hero :global(.hero-bg.day),
+  :global([data-theme='light']) .hero :global(.hero-bg.night) {
+    display: none;
+  }
+  .nw {
+    display: inline-block;
+    white-space: nowrap;
+  }
+  @keyframes drift {
+    to {
+      transform: scale(1.08) translateX(-1.5%);
+    }
+  }
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+      linear-gradient(180deg, rgba(10, 20, 50, 0.05) 0%, rgba(10, 20, 50, 0.1) 40%, rgba(10, 18, 40, 0.72) 100%),
+      linear-gradient(90deg, rgba(10, 18, 40, 0.45), transparent 70%);
+  }
+  :global([data-theme='dark']) .hero-shade {
+    background:
+      linear-gradient(180deg, rgba(8, 12, 30, 0.35) 0%, rgba(8, 12, 30, 0.35) 40%, rgba(6, 10, 24, 0.85) 100%),
+      linear-gradient(90deg, rgba(8, 12, 30, 0.55), transparent 70%);
+  }
+  .hero-wires {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    color: rgba(16, 20, 38, 0.82);
+    pointer-events: none;
+  }
+  .birds {
+    animation: hop 6s ease-in-out infinite;
+  }
+  @keyframes hop {
+    0%,
+    88%,
+    100% {
+      transform: translateY(0);
+    }
+    92% {
+      transform: translateY(-6px);
+    }
+  }
+  .hero-content {
+    max-width: 560px;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+  }
+  .hero-content .kicker {
+    margin: 0 0 8px;
+    color: #ffd1e6;
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(36px, 6vw, 64px);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+  }
+  .grad {
+    background: linear-gradient(120deg, #9fe3ff, #ffffff 45%, #ffb3d6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lead {
+    margin: 16px 0 24px;
+    font-size: clamp(16px, 2vw, 18px);
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.85;
+  }
+  .lead b {
+    color: #ffd1e6;
+  }
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .btn.ghost {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+  }
+  .btn.ghost:hover {
+    color: #fff;
+    border-color: #fff;
+  }
+
+  /* terminal */
+  .term {
+    position: relative;
+    align-self: end;
+    justify-self: end;
+    width: min(440px, 100%);
+    border-radius: 16px;
+    background: rgba(12, 16, 34, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+  }
+  .term-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 34px;
+    padding: 0 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .dots {
+    display: inline-flex;
+    gap: 6px;
+  }
+  .dots i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff5f57;
+  }
+  .dots i:nth-child(2) {
+    background: #febc2e;
+  }
+  .dots i:nth-child(3) {
+    background: #28c840;
+  }
+  .term-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .term-body {
+    min-height: 222px;
+    margin: 0;
+    padding: 14px 16px 18px;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: #e6ecff;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .term-body :global(.ps) {
+    color: #6cffb0;
+  }
+  .term-body :global(.out) {
+    color: #ffb3d6;
+  }
+  .term-body :global(.caret) {
+    color: #5fd4ff;
+    animation: caret 1s steps(1) infinite;
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
+  }
+  .peek {
+    position: absolute;
+    top: -62px;
+    right: 22px;
+    cursor: pointer;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
+    clip-path: inset(0 0 26px 0);
+  }
+  .peek.boing {
+    animation: boing 0.5s cubic-bezier(0.3, 1.8, 0.5, 1);
+  }
+  @keyframes boing {
+    40% {
+      transform: translateY(-10px) rotate(-6deg);
+    }
+  }
+  .peek[data-say]::after {
+    content: attr(data-say);
+    position: absolute;
+    right: 88px;
+    top: 6px;
+    padding: 4px 10px;
+    font-size: 13px;
+    white-space: nowrap;
+    color: #1d2742;
+    background: #fff;
+    border-radius: 12px 12px 2px 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  }
+
+  /* sections */
+  .section {
+    margin-top: clamp(48px, 8vw, 80px);
+  }
+  .row-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .interests {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .interest {
+    position: relative;
+    display: grid;
+    gap: 8px;
+    padding: 22px 20px;
+    color: var(--text);
+    overflow: hidden;
+    transition:
+      transform 0.25s,
+      border-color 0.25s,
+      box-shadow 0.25s;
+  }
+  .interest::after {
+    content: '';
+    position: absolute;
+    right: -30px;
+    top: -30px;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: var(--c);
+    opacity: 0.1;
+    transition: transform 0.4s;
+  }
+  .interest:hover {
+    text-decoration: none;
+    transform: translateY(-4px);
+    border-color: var(--c);
+    box-shadow: var(--shadow);
+  }
+  .interest:hover::after {
+    transform: scale(1.4);
+  }
+  .ic {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+  }
+  .it-title {
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .it-title small {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .it-text {
+    font-size: 14.5px;
+    color: var(--text-2);
+    line-height: 1.7;
+  }
+  .post-list {
+    display: grid;
+    gap: 14px;
+  }
+  .peek-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .peek-item {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .peek-item:first-child {
+    grid-row: span 2;
+    aspect-ratio: auto;
+  }
+  .peek-item :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s;
+  }
+  .peek-item:hover :global(img) {
+    transform: scale(1.06);
+  }
+  .cap {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    padding: 2px 10px;
+    font-size: 13px;
+    color: #fff;
+    background: rgba(10, 18, 40, 0.5);
+    backdrop-filter: blur(6px);
+    border-radius: 999px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: all 0.3s;
+  }
+  .peek-item:hover .cap {
+    opacity: 1;
+    transform: none;
+    text-decoration: none;
+  }
+
+  @media (max-width: 960px) {
+    .hero {
+      grid-template-columns: 1fr;
+      align-items: start;
+      align-content: end;
+    }
+    .term {
+      justify-self: start;
+      margin-top: 56px;
+    }
+    .interests {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .hero {
+      padding: 24px 18px;
+      border-radius: 22px;
+    }
+    .interests {
+      grid-template-columns: 1fr;
+    }
+    .peek-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .peek-item:first-child {
+      grid-row: auto;
+      grid-column: span 2;
+      aspect-ratio: 16 / 9;
+    }
+    .term-body {
+      font-size: 12.5px;
+    }
+  }
+</style>

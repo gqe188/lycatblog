@@ -1,0 +1,87 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../lib/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <svg class="wires" viewBox="0 0 1200 80" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 18 Q300 62 600 30 T1200 22" />
+    <path d="M0 34 Q320 78 610 44 T1200 38" />
+    <path d="M0 50 Q340 92 620 58 T1200 54" />
+  </svg>
+  <div class="container inner">
+    <div class="left">
+      <p class="sig">
+        <span class="prompt">lycat@475:~$</span> echo "thanks for visiting"
+      </p>
+      <p class="copy">© {year} {SITE.author} · 用 Astro 搭建 · 本站由 Claude Opus 5.5 设计制作</p>
+    </div>
+    <div class="links">
+      <a href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub"><Icon name="github" /></a>
+      <a href="/rss.xml" aria-label="RSS 订阅"><Icon name="rss" /></a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    margin-top: 96px;
+    padding: 40px 0 84px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .wires {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    fill: none;
+    stroke: var(--border-strong);
+    stroke-width: 1.2;
+    pointer-events: none;
+  }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .left p {
+    margin: 0;
+  }
+  .sig {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .prompt {
+    color: var(--term);
+  }
+  .copy {
+    margin-top: 4px !important;
+  }
+  .links {
+    display: flex;
+    gap: 10px;
+  }
+  .links a {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: var(--text-2);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.2s;
+  }
+  .links a:hover {
+    color: var(--sky);
+    border-color: var(--sky);
+    transform: translateY(-2px);
+  }
+</style>

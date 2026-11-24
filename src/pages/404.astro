@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Mascot from '../components/Mascot.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<BaseLayout title="404" description="页面走丢了">
+  <div class="container nf">
+    <div class="glitch" data-text="404" aria-hidden="true">404</div>
+    <Mascot size={110} />
+    <h1>这只猫也没找到这个页面</h1>
+    <pre class="term"><span class="ps">lycat@475:~$</span> curl -I <span class="path"></span>
+HTTP/1.1 404 Not Found
+X-Hint: flag&#123;n0th1ng_h3r3_but_us_c4ts&#125;</pre>
+    <div class="cta">
+      <a class="btn primary" href="/"><Icon name="arrowLeft" size={16} /> 回到首页</a>
+      <button class="btn" type="button" data-search-open><Icon name="search" size={16} /> 搜索一下</button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const p = document.querySelector('.path');
+  if (p) p.textContent = location.pathname;
+</script>
+
+<style>
+  .nf {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding-top: 56px;
+    text-align: center;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(22px, 4vw, 30px);
+  }
+  .glitch {
+    position: relative;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: clamp(96px, 20vw, 180px);
+    line-height: 1;
+    background: linear-gradient(120deg, var(--sky), var(--sakura));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .glitch::before {
+    animation: g1 2.4s infinite steps(2);
+    clip-path: inset(0 0 60% 0);
+  }
+  .glitch::after {
+    animation: g2 2.4s infinite steps(2);
+    clip-path: inset(55% 0 0 0);
+  }
+  @keyframes g1 {
+    0%,
+    80%,
+    100% {
+      transform: none;
+    }
+    85% {
+      transform: translate(-6px, -2px);
+    }
+    90% {
+      transform: translate(5px, 1px);
+    }
+  }
+  @keyframes g2 {
+    0%,
+    80%,
+    100% {
+      transform: none;
+    }
+    86% {
+      transform: translate(6px, 2px);
+    }
+    92% {
+      transform: translate(-4px, 0);
+    }
+  }
+  .term {
+    max-width: 100%;
+    margin: 8px 0;
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #e6ecff;
+    background: #0f1530;
+    border-radius: 14px;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  .ps {
+    color: #6cffb0;
+  }
+  .path {
+    color: #ffb3d6;
+  }
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+</style>

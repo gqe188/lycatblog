@@ -1,0 +1,11 @@
+{
+  "hello-world": {
+    "tags": ["随笔"],
+    "description": "Hello World! 小站开张的第一篇。"
+  },
+  "ctf2026-wp": {
+    "tags": ["CTF", "Writeup", "Web", "Misc"],
+    "description": "?CTF 2026 Web / Misc 题解：JWT 伪造、前端变量篡改、API 越权、图片 OSINT、ZIP 伪加密与爆破、PNG IHDR 修复。",
+    "cover": "./assets/20261101_140500_image.webp"
+  }
+}

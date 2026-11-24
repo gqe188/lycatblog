@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPosts, allTags, tagSlug } from '../../lib/site';
+
+const posts = await getPosts();
+const tags = allTags(posts);
+const byYear = new Map<number, typeof posts>();
+for (const p of posts) {
+  const y = p.data.date.getUTCFullYear();
+  byYear.set(y, [...(byYear.get(y) ?? []), p]);
+}
+---
+
+<BaseLayout title="文章" description="全部文章归档：CTF Writeup、安全研究、编程与 AI、随笔。">
+  <div class="container">
+    <header class="page-head">
+      <p class="kicker">$ ls -lt ./posts</p>
+      <h1>文章归档</h1>
+      <p>共 {posts.length} 篇 · 按时间倒序排列</p>
+    </header>
+
+    <div class="tag-cloud">
+      {
+        tags.map(([t, n]) => (
+          <a class="tag" href={`/tags/${tagSlug(t)}/`}>
+            {t}
+            <sup>{n}</sup>
+          </a>
+        ))
+      }
+    </div>
+
+    {
+      [...byYear.entries()].map(([year, list]) => (
+        <section class="year">
+          <h2 class="y">
+            <span>{year}</span>
+            <small>{list.length} 篇</small>
+          </h2>
+          <div class="list">
+            {list.map((post, i) => (
+              <PostCard post={post} index={i} />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 36px;
+  }
+  .tag sup {
+    margin-left: 2px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    opacity: 0.7;
+  }
+  .year + .year {
+    margin-top: 40px;
+  }
+  .y {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 0 16px;
+    font-family: var(--font-mono);
+    font-size: 30px;
+  }
+  .y span {
+    background: linear-gradient(120deg, var(--sky), var(--sakura));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .y small {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .list {
+    display: grid;
+    gap: 14px;
+  }
+</style>

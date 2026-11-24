@@ -1,0 +1,126 @@
+---
+import 'lxgw-wenkai-screen-webfont/lxgwwenkaigbscreen.css';
+import '@fontsource-variable/jetbrains-mono/wght.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SearchModal from '../components/SearchModal.astro';
+import { SITE } from '../lib/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+}
+
+const { title, description = SITE.description, image, type = 'website' } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.title} · ${SITE.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={SITE.author} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#d9ecff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1430" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={SITE.name} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <script is:inline>
+      (() => {
+        let t = null;
+        try {
+          t = localStorage.getItem('lycat-theme');
+        } catch {}
+        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip sr-only" href="#main">跳到正文</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <SearchModal />
+    <button class="to-top" type="button" aria-label="回到顶部" hidden>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>
+    </button>
+
+    <script>
+      // 回到顶部
+      const btn = document.querySelector<HTMLButtonElement>('.to-top')!;
+      const onScroll = () => (btn.hidden = window.scrollY < 600);
+      addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+      btn.addEventListener('click', () => scrollTo({ top: 0 }));
+
+      // 控制台彩蛋 —— 给打开 DevTools 的 CTFer
+      if (!(window as any).__lycatHello) {
+        (window as any).__lycatHello = true;
+        console.log(
+          '%c /\\_/\\ \n( o.o )  meow~ 欢迎来到 lycatblog\n > ^ <   你在看源码？那这个给你：',
+          'color:#2f8fff;font-family:monospace;font-size:13px',
+        );
+        console.log('%cZmxhZ3tjdXIxMHVzX2M0dF9mMHVuZF90aDNfYzBuczBsM30=', 'color:#ff6fae;font-family:monospace');
+      }
+    </script>
+
+    <style>
+      .skip:focus {
+        position: fixed;
+        top: 8px;
+        left: 8px;
+        z-index: 100;
+        width: auto;
+        height: auto;
+        padding: 8px 14px;
+        clip: auto;
+        background: var(--surface-solid);
+        border-radius: 8px;
+      }
+      .to-top {
+        position: fixed;
+        right: max(18px, env(safe-area-inset-right));
+        bottom: max(18px, env(safe-area-inset-bottom));
+        z-index: 40;
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        color: var(--sky);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 50%;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .to-top:hover {
+        transform: translateY(-3px);
+      }
+      .to-top[hidden] {
+        display: none;
+      }
+    </style>
+  </body>
+</html>

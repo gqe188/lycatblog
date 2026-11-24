@@ -1,0 +1,279 @@
+---
+import { getImage } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { getPhotos, PHOTO_CATEGORIES } from '../lib/site';
+
+const photos = await Promise.all(
+  getPhotos().map(async (p) => {
+    const [thumb, thumb2x, full] = await Promise.all([
+      getImage({ src: p.src, width: 480, format: 'webp', quality: 78 }),
+      getImage({ src: p.src, width: 900, format: 'webp', quality: 74 }),
+      getImage({ src: p.src, width: Math.min(2000, p.src.width), format: 'webp', quality: 86 }),
+    ]);
+    const w = Math.min(2000, p.src.width);
+    return { ...p, thumb, thumb2x, full, fw: w, fh: Math.round((p.src.height / p.src.width) * w) };
+  }),
+);
+const counts = new Map<string, number>();
+photos.forEach((p) => counts.set(p.category, (counts.get(p.category) ?? 0) + 1));
+const cats = [...PHOTO_CATEGORIES.filter((c) => counts.has(c)), ...[...counts.keys()].filter((c) => !PHOTO_CATEGORIES.includes(c))];
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<BaseLayout title="画廊" description="lycat 的摄影作品：天空、山水、建筑与日常。" image={photos[0]?.full.src}>
+  <div class="container">
+    <header class="page-head">
+      <p class="kicker">$ ls ./gallery --sort=sky</p>
+      <h1>画廊</h1>
+      <p>把晴天存档 · 共 {photos.length} 张 · 点击查看大图</p>
+    </header>
+
+    <div class="filters" role="toolbar" aria-label="按分类筛选">
+      <button class="chip active" data-cat="all" aria-pressed="true">全部 <span>{photos.length}</span></button>
+      {
+        cats.map((c) => (
+          <button class="chip" data-cat={c} aria-pressed="false">
+            {c} <span>{counts.get(c)}</span>
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="masonry" id="gallery">
+      {
+        photos.map((p, i) => (
+          <figure class="ph reveal" data-cat={p.category} id={`photo-${p.index}`} style={`animation-delay:${Math.min(i, 12) * 45}ms`}>
+            <a href={p.full.src} data-pswp-width={p.fw} data-pswp-height={p.fh} data-title={p.title} data-cat={p.category} data-no={pad(p.index)}>
+              <img
+                src={p.thumb.src}
+                srcset={`${p.thumb.src} 480w, ${p.thumb2x.src} 900w`}
+                sizes="(max-width: 560px) 50vw, (max-width: 960px) 33vw, 360px"
+                width={p.src.width}
+                height={p.src.height}
+                alt={p.title || `照片 ${p.index}`}
+                loading={i < 6 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+              <figcaption>
+                <span class="no">#{pad(p.index)}</span>
+                {p.title && <span class="tt">{p.title}</span>}
+                <span class="ct">{p.category}</span>
+              </figcaption>
+            </a>
+          </figure>
+        ))
+      }
+    </div>
+
+    <p class="foot-note"><Icon name="camera" size={15} /> 所有照片均为原创，转载请注明出处。</p>
+  </div>
+</BaseLayout>
+
+<script>
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  import 'photoswipe/style.css';
+
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '#gallery',
+    children: '.ph:not([hidden]) a',
+    pswpModule: () => import('photoswipe'),
+    bgOpacity: 0.92,
+    showHideAnimationType: 'zoom',
+    wheelToZoom: true,
+    paddingFn: (vs) => (vs.x < 700 ? { top: 0, bottom: 0, left: 0, right: 0 } : { top: 40, bottom: 64, left: 60, right: 60 }),
+  });
+
+  // 底部说明条
+  lightbox.on('uiRegister', () => {
+    lightbox.pswp!.ui!.registerElement({
+      name: 'caption',
+      order: 9,
+      isButton: false,
+      appendTo: 'root',
+      onInit: (el, pswp) => {
+        pswp.on('change', () => {
+          const a = pswp.currSlide?.data.element as HTMLElement | undefined;
+          if (!a) return;
+          const { no, title, cat } = a.dataset;
+          el.innerHTML = `<span class="no">#${no}</span>${title ? `<span>${title}</span>` : ''}<span class="ct">${cat}</span>`;
+        });
+      },
+    });
+  });
+  lightbox.init();
+
+  // 分类筛选
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
+  const items = [...document.querySelectorAll<HTMLElement>('.ph')];
+  chips.forEach((chip) =>
+    chip.addEventListener('click', () => {
+      const cat = chip.dataset.cat;
+      chips.forEach((c) => {
+        c.classList.toggle('active', c === chip);
+        c.setAttribute('aria-pressed', String(c === chip));
+      });
+      items.forEach((it) => (it.hidden = cat !== 'all' && it.dataset.cat !== cat));
+    }),
+  );
+
+  // 从首页 #photo-N 进入时直接打开对应照片
+  const m = location.hash.match(/^#photo-(\d+)$/);
+  if (m) {
+    const idx = items.findIndex((it) => it.id === `photo-${m[1]}`);
+    if (idx >= 0) setTimeout(() => lightbox.loadAndOpen(idx), 300);
+  }
+</script>
+
+<style>
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .chip {
+    padding: 4px 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text-2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chip span {
+    margin-left: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .chip:hover {
+    border-color: var(--sky);
+    color: var(--sky);
+  }
+  .chip.active {
+    color: #fff;
+    background: linear-gradient(135deg, var(--sky), var(--sakura));
+    border-color: transparent;
+  }
+  .chip.active span {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .masonry {
+    columns: 3 300px;
+    column-gap: 14px;
+  }
+  .ph {
+    break-inside: avoid;
+    margin: 0 0 14px;
+  }
+  .ph[hidden] {
+    display: none;
+  }
+  .ph a {
+    position: relative;
+    display: block;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    cursor: zoom-in;
+  }
+  .ph img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition:
+      transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+      filter 0.4s;
+  }
+  .ph a:hover img {
+    transform: scale(1.045);
+  }
+  figcaption {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 28px 12px 10px;
+    font-size: 14px;
+    color: #fff;
+    background: linear-gradient(transparent, rgba(8, 14, 32, 0.7));
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s;
+  }
+  .ph a:hover figcaption,
+  .ph a:focus-visible figcaption {
+    opacity: 1;
+    transform: none;
+  }
+  .no {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #9fe3ff;
+  }
+  .ct {
+    margin-left: auto;
+    padding: 0 8px;
+    font-size: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+  .foot-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 28px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  :global(.pswp__caption) {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: #fff;
+    background: rgba(10, 16, 36, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+  }
+  :global(.pswp__caption .no) {
+    font-family: var(--font-mono);
+    color: #9fe3ff;
+  }
+  :global(.pswp__caption .ct) {
+    padding: 0 8px;
+    font-size: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  @media (max-width: 560px) {
+    .masonry {
+      columns: 2;
+      column-gap: 8px;
+    }
+    .ph {
+      margin-bottom: 8px;
+    }
+    .ph a {
+      border-radius: 10px;
+    }
+    figcaption {
+      display: none;
+    }
+  }
+</style>

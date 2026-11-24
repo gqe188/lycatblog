@@ -1,0 +1,349 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Mascot from '../components/Mascot.astro';
+import Icon from '../components/Icon.astro';
+import { INTERESTS } from '../data/interests';
+import { SITE, getPosts, getPhotos } from '../lib/site';
+
+const about = await getEntry('pages', 'about');
+const { Content } = about ? await render(about) : { Content: null };
+const fields = about?.data.fields ?? [];
+const hasBody = !!about?.body?.trim();
+const name = fields.find((f) => f.k === '作者')?.v ?? SITE.author;
+const role = fields.find((f) => f.k === '方向')?.v;
+const isUrl = (v: string) => /^https?:\/\//.test(v);
+const posts = await getPosts();
+const photos = getPhotos();
+
+const stats = [
+  { k: 'POSTS', v: posts.length },
+  { k: 'PHOTOS', v: photos.length },
+  { k: 'TAGS', v: new Set(posts.flatMap((p) => p.data.tags)).size },
+];
+---
+
+<BaseLayout title={about?.data.title ?? '关于'} description={`关于 ${name}`}>
+  <div class="container">
+    <header class="page-head">
+      <p class="kicker">$ cat ./about.md</p>
+      <h1>{about?.data.title ?? '关于'}</h1>
+    </header>
+
+    <section class="profile card reveal">
+      <div class="avatar-wrap">
+        <div class="avatar"><Mascot size={132} mood="wink" /></div>
+        <span class="status"><i></i> online</span>
+      </div>
+
+      <div class="info">
+        <p class="label">PLAYER PROFILE</p>
+        <h2 class="name">{name}</h2>
+        {role && <p class="role"><Icon name="bug" size={16} /> {role}</p>}
+
+        <dl class="fields">
+          {
+            fields.map((f) => (
+              <div class="row">
+                <dt>{f.k}</dt>
+                <dd>
+                  {isUrl(f.v) ? (
+                    <a href={f.v} target="_blank" rel="noopener">
+                      {f.v.replace(/^https?:\/\//, '')}
+                    </a>
+                  ) : (
+                    f.v
+                  )}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+
+        <div class="stats">
+          {
+            stats.map((s) => (
+              <div class="stat">
+                <b>{s.v}</b>
+                <span>{s.k}</span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <svg class="deco" viewBox="0 0 200 200" aria-hidden="true">
+        <path d="M100 10 L112 88 L190 100 L112 112 L100 190 L88 112 L10 100 L88 88 Z"></path>
+      </svg>
+    </section>
+
+    {
+      hasBody && Content && (
+        <section class="prose card body">
+          <Content />
+        </section>
+      )
+    }
+
+    <section class="block">
+      <h2 class="section-title">兴趣 <span class="en">skill tree</span></h2>
+      <div class="skills">
+        {
+          INTERESTS.map((it) => (
+            <a class="skill card" href={it.href} style={`--c:${it.color}`}>
+              <span class="ic">
+                <Icon name={it.icon} size={20} />
+              </span>
+              <span>
+                <b>{it.title}</b>
+                <small>{it.text}</small>
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="block">
+      <h2 class="section-title">关于本站 <span class="en">colophon</span></h2>
+      <div class="colophon card">
+        <p>
+          本站使用 <a href="https://astro.build" target="_blank" rel="noopener">Astro</a> 生成静态页面，主题「晴空 / 夜空」与看板猫均为原创设计，由
+          <b>Claude Opus 5.5</b> 设计并搭建。
+        </p>
+        <ul>
+          <li>正文字体：<a href="https://github.com/lxgw/LxgwWenKai-Screen" target="_blank" rel="noopener">霞鹜文楷 Screen</a>（SIL OFL 1.1）</li>
+          <li>代码字体：<a href="https://www.jetbrains.com/lp/mono/" target="_blank" rel="noopener">JetBrains Mono</a>（SIL OFL 1.1）</li>
+          <li>代码配色：<a href="https://catppuccin.com" target="_blank" rel="noopener">Catppuccin</a> Latte / Mocha（MIT），由 Shiki 渲染</li>
+          <li>图片灯箱：<a href="https://photoswipe.com" target="_blank" rel="noopener">PhotoSwipe</a>（MIT）</li>
+          <li>首页头图与画廊照片均为站长原创摄影</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .profile {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(20px, 4vw, 44px);
+    align-items: center;
+    padding: clamp(24px, 5vw, 44px);
+    overflow: hidden;
+  }
+  .profile::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--sky), var(--sakura), var(--sun));
+  }
+  .avatar-wrap {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+  }
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 172px;
+    height: 172px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 25%, #fff, transparent 60%),
+      linear-gradient(160deg, #bfe3ff, #ffd0e6);
+    box-shadow:
+      0 0 0 4px var(--surface-solid),
+      0 0 0 7px var(--sky),
+      var(--shadow);
+  }
+  :global([data-theme='dark']) .avatar {
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.25), transparent 60%),
+      linear-gradient(160deg, #1d3b6b, #5a2850);
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--term);
+  }
+  .status i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--term);
+    box-shadow: 0 0 0 0 var(--term);
+    animation: ping 2s infinite;
+  }
+  @keyframes ping {
+    70% {
+      box-shadow: 0 0 0 8px transparent;
+    }
+  }
+  .label {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--sakura);
+  }
+  .name {
+    margin: 4px 0 0;
+    font-family: var(--font-mono);
+    font-size: clamp(28px, 4vw, 40px);
+  }
+  .role {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 0;
+    padding: 2px 12px;
+    border-radius: 999px;
+    color: var(--term);
+    background: color-mix(in srgb, var(--term) 12%, transparent);
+    font-size: 15px;
+  }
+  .fields {
+    display: grid;
+    gap: 2px;
+    margin: 18px 0 0;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  dt {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    overflow-wrap: anywhere;
+  }
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .stat {
+    display: grid;
+    min-width: 84px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+  .stat b {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    line-height: 1.2;
+    color: var(--sky);
+  }
+  .stat span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+  .deco {
+    position: absolute;
+    right: -30px;
+    bottom: -30px;
+    width: 200px;
+    fill: var(--sakura);
+    opacity: 0.08;
+    pointer-events: none;
+    animation: spin 40s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .body {
+    margin-top: 20px;
+    padding: clamp(20px, 4vw, 36px);
+  }
+  .block {
+    margin-top: 56px;
+  }
+  .skills {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .skill {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 18px;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+  .skill:hover {
+    text-decoration: none;
+    border-color: var(--c);
+    transform: translateY(-2px);
+  }
+  .skill .ic {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+  }
+  .skill b {
+    display: block;
+    font-size: 17px;
+  }
+  .skill small {
+    display: block;
+    margin-top: 2px;
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.7;
+  }
+  .colophon {
+    padding: 20px 24px;
+    color: var(--text-2);
+    font-size: 15px;
+  }
+  .colophon p {
+    margin: 0 0 8px;
+  }
+  .colophon ul {
+    margin: 0;
+    padding-left: 1.3em;
+  }
+  .colophon li::marker {
+    color: var(--sakura);
+  }
+  @media (max-width: 640px) {
+    .profile {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .row {
+      text-align: left;
+    }
+    .stats {
+      justify-content: center;
+    }
+    .skills {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

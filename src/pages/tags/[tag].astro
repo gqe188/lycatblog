@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import Icon from '../../components/Icon.astro';
+import { getPosts, allTags, type Post } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return allTags(posts).map(([tag]) => ({
+    params: { tag: tag.toLowerCase() },
+    props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) },
+  }));
+}
+
+interface Props {
+  tag: string;
+  posts: Post[];
+}
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag}`} description={`标签「${tag}」下的全部文章`}>
+  <div class="container">
+    <header class="page-head">
+      <p class="kicker">$ grep -r "#{tag}" ./posts</p>
+      <h1><span class="hash">#</span>{tag}</h1>
+      <p>{posts.length} 篇文章 · <a href="/posts/"><Icon name="arrowLeft" size={14} /> 全部文章</a></p>
+    </header>
+    <div class="list">
+      {posts.map((post, i) => <PostCard post={post} index={i} />)}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .hash {
+    color: var(--sakura);
+    margin-right: 4px;
+    font-family: var(--font-mono);
+  }
+  .list {
+    display: grid;
+    gap: 14px;
+  }
+  .page-head a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+</style>
