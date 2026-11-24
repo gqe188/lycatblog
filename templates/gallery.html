@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% from 'ui.html' import icon, photo_card, viewer %}
+{% block main %}
+  <header class="page-title">
+    <p class="kicker">{{ icon('camera', 18) }} 摄影</p>
+    <h1>相机里的日常</h1>
+    <p>山水、街巷和一路上抬头看到的天空。</p>
+  </header>
+  <section aria-label="摄影作品">
+    <div class="gallery-bar">
+      <div class="filters" data-filters role="group" aria-label="按主题筛选" hidden>
+        <button type="button" data-filter="" aria-pressed="true">全部</button>
+        {% for category in categories %}<button type="button" data-filter="{{ category }}" aria-pressed="false">{{ category }}</button>{% endfor %}
+      </div>
+      <p data-photo-total role="status">{{ photos | length }} 张照片</p>
+    </div>
+    <div class="frames">
+      {% for photo in photos %}{{ photo_card(photo) }}{% endfor %}
+    </div>
+  </section>
+  {{ viewer() }}
+{% endblock %}

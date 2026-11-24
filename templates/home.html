@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% from 'ui.html' import icon, post_card, photo_card, viewer %}
+{% block main %}
+  <section class="welcome" aria-labelledby="welcome-title">
+    <div class="welcome-title">
+      <p class="kicker">{{ icon('cat', 17) }} lycat 的侧写</p>
+      <h1 id="welcome-title">记录代码<span>，</span><br>也记录<em>光</em>。</h1>
+    </div>
+    <div class="welcome-note">
+      <p>我是 lycat / 475。比赛时做 Web CTF，平时写代码、关注 AI、追番，也常带着相机出门。</p>
+      <div class="welcome-actions">
+        <a class="button primary" href="/posts/">{{ icon('journal', 17) }} 读文章</a>
+        <a class="button secondary" href="/gallery/">{{ icon('camera', 17) }} 看照片</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section" aria-labelledby="latest-title">
+    <div class="section-head">
+      <h2 id="latest-title">{{ icon('journal') }} 最新文章</h2>
+      <a href="/posts/">全部文章</a>
+    </div>
+    <ul class="entry-list home-entries">
+      {% for post in posts[:4] %}{{ post_card(post) }}{% endfor %}
+    </ul>
+  </section>
+
+  {% if featured %}
+  <section class="home-section" aria-labelledby="featured-title">
+    <div class="section-head">
+      <h2 id="featured-title">{{ icon('camera') }} 摄影选集</h2>
+      <a href="/gallery/">全部 {{ photo_count }} 张</a>
+    </div>
+    <div class="frames feature-frames">
+      {% for photo in featured %}{{ photo_card(photo) }}{% endfor %}
+    </div>
+  </section>
+  {{ viewer() }}
+  {% endif %}
+{% endblock %}

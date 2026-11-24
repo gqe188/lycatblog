@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block main %}
+  <div class="reading">
+    <a class="back-link" href="/posts/">返回文章归档</a>
+    <header class="article-head">
+      <div class="entry-meta"><span>{{ post.topic }}</span><time datetime="{{ post.published.isoformat() }}">{{ post.published.strftime('%Y.%m.%d') }}</time></div>
+      <h1>{{ post.title }}</h1>
+      <p>lycat / 475</p>
+    </header>
+    <div class="reading-grid{% if post.headings %} with-toc{% endif %}">
+      {% if post.headings %}
+      <nav class="toc" aria-label="本文目录">
+        <p>目录</p>
+        <ul>
+          {% for heading in post.headings %}
+          <li{% if heading.depth > 2 %} class="subheading"{% endif %}><a href="#{{ heading.anchor }}">{{ heading.text }}</a></li>
+          {% endfor %}
+        </ul>
+      </nav>
+      {% endif %}
+      <article class="prose" id="article">
+        {{ post.body }}
+      </article>
+    </div>
+    {% if older or newer %}
+    <nav class="neighbors" aria-label="相邻文章">
+      {% if newer %}<a href="{{ newer.url }}"><small>较新文章</small>{{ newer.title }}</a>{% endif %}
+      {% if older %}<a href="{{ older.url }}"><small>较早文章</small>{{ older.title }}</a>{% endif %}
+    </nav>
+    {% endif %}
+  </div>
+{% endblock %}

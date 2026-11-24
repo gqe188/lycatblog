@@ -1,0 +1,67 @@
+{% from 'ui.html' import icon %}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4fb">
+  <meta name="description" content="{{ post.description if post and post.description else 'lycat / 475 的博客，关于编程、Web 安全和摄影。' }}">
+  <title>{% if title %}{{ title }} · {% endif %}lycat 的侧写</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  {% if post %}<link rel="stylesheet" href="/code.css">{% endif %}
+  <script defer src="/site.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">跳到正文</a>
+  <header class="masthead">
+    <div class="shell nav-shell">
+      <a class="identity" href="/">
+        <span class="identity-icon">{{ icon('cat', 21) }}</span>
+        <span>lycat<span class="identity-slash"> / </span>475</span>
+      </a>
+      <nav aria-label="主导航">
+        {% for target, label, path in [('home', '首页', '/'), ('posts', '文章', '/posts/'), ('gallery', '摄影', '/gallery/'), ('about', '关于', '/about/')] %}
+          <a href="{{ path }}"{% if current == target %} aria-current="page"{% endif %}>{{ label }}</a>
+        {% endfor %}
+      </nav>
+      <div class="masthead-actions">
+        <button class="icon-control" type="button" aria-label="搜索文章" title="搜索文章" data-search-open hidden>{{ icon('search', 19) }}</button>
+        <a class="icon-control github-nav" href="{{ github }}" aria-label="GitHub" title="GitHub">{{ icon('github', 18) }}</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell main" id="main">
+    {% block main %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer-shell">
+      <a class="footer-name" href="/">{{ icon('cat', 17) }} lycat / 475</a>
+      <a href="{{ github }}">GitHub</a>
+    </div>
+  </footer>
+
+  <dialog id="search" class="search-dialog" aria-labelledby="search-title">
+    <div class="search-content">
+      <div class="search-top">
+        <h2 id="search-title">搜索文章</h2>
+        <button type="button" class="icon-control" aria-label="关闭搜索" data-search-close>{{ icon('close') }}</button>
+      </div>
+      <div class="search-field">
+        {{ icon('search', 18) }}
+        <input type="search" placeholder="输入标题或主题" aria-label="文章标题或主题" autofocus>
+      </div>
+      <p data-search-empty role="status" hidden>没有匹配的文章。</p>
+      <ul class="search-results">
+        {% for entry in posts %}
+          <li data-search-text="{{ entry.title }} {{ entry.topic }} {{ entry.description }}">
+            <a href="{{ entry.url }}"><span>{{ entry.title }}</span><time datetime="{{ entry.published.isoformat() }}">{{ entry.published.isoformat() }}</time></a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </dialog>
+</body>
+</html>

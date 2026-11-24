@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% from 'ui.html' import icon, post_card %}
+{% block main %}
+  <header class="page-title">
+    <p class="kicker">{{ icon('journal', 18) }} 共 {{ posts | length }} 篇文章</p>
+    <h1>文章归档</h1>
+    <p>Web CTF、代码和偶尔写下的随笔。</p>
+  </header>
+  <section class="archive-list" aria-label="文章列表">
+    <ul class="entry-list">
+      {% for post in posts %}{{ post_card(post) }}{% endfor %}
+    </ul>
+  </section>
+{% endblock %}

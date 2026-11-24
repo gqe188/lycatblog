@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% from 'ui.html' import icon %}
+{% block main %}
+  <article class="about">
+    <div class="about-identity">
+      <span class="identity-icon">{{ icon('cat', 23) }}</span>
+      <p class="footer-name">lycat / 475</p>
+    </div>
+    <div class="prose about-body">
+      {{ about }}
+      <h2>平时喜欢</h2>
+      <ul class="hobbies" aria-label="兴趣">
+        {% for hobby in ['编程', '人工智能', 'Web CTF', '二次元', '摄影'] %}
+          <li>{{ hobby }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </article>
+{% endblock %}
